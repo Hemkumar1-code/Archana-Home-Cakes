@@ -22,7 +22,7 @@ Cake: ${cake?.name}
 Quantity: ${formData.quantity}
 Name: ${formData.name}
 Phone: ${formData.phone}
-Address: ${formData.address}`;
+Address: ${formData.address}${cake?.image ? `\n\nReference Image: ${cake.image}` : ''}`;
     const encodedText = encodeURIComponent(text);
     window.open(`https://wa.me/919688476484?text=${encodedText}`, '_blank');
     onClose();

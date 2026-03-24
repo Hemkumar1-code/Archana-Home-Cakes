@@ -47,10 +47,13 @@ const CustomOrderModal = ({ isOpen, onClose }) => {
           const data = await response.json();
           imageUrl = data.url;
         } else {
-          console.error('Image upload failed');
+          const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
+          console.error('Image upload failed:', errorData.error);
+          alert('Note: Image upload failed. Proceeding with WhatsApp order without the image link. You can still attach the image manually in WhatsApp.');
         }
       } catch (error) {
         console.error('Error during image upload:', error);
+        alert('Note: Network error or server not configured for uploads. Proceeding with WhatsApp order without the image link.');
       }
     }
 
@@ -59,13 +62,15 @@ Flavor: ${formData.flavor}
 Weight: ${formData.weight}
 Message on Cake: ${formData.message}
 Name: ${formData.name}
-Phone: ${formData.phone}${imageUrl ? `\nReference Image: ${imageUrl}` : '\n*I have reference images to share in chat.*'}`;
+Phone: ${formData.phone}${imageUrl ? `\n\nReference Image Link: ${imageUrl}\n(Please wait a moment for the image preview to load in WhatsApp)` : '\n\n*I have reference images to share in chat.*'}`;
 
     const encodedText = encodeURIComponent(text);
-    window.open(`https://wa.me/919688476484?text=${encodedText}`, '_blank');
+    const whatsappUrl = `https://wa.me/919688476484?text=${encodedText}`;
     
+    // Use a small delay for success state before opening WhatsApp
     setStatus('success');
     setTimeout(() => {
+      window.open(whatsappUrl, '_blank');
       onClose();
       setStatus('idle');
       setFormData({
