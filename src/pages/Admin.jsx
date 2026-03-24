@@ -22,6 +22,10 @@ const Admin = () => {
     setLoginCreds({ ...loginCreds, [e.target.name]: e.target.value });
   };
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     const validUser = 'archana';
@@ -40,8 +44,6 @@ const Admin = () => {
     setIsLoggedIn(false);
     localStorage.removeItem('adminAuth');
   };
-
-  // Form State
   const [formData, setFormData] = useState({ name: '', price: '', description: '' });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -106,7 +108,7 @@ const Admin = () => {
 
     try {
       setStatus('loading');
-      
+
       // 1. Upload to Cloudinary
       const formDataCloud = new FormData();
       formDataCloud.append('file', imagePreview);
@@ -137,7 +139,7 @@ const Admin = () => {
       setImagePreview(null);
       fetchCakes(); // Refresh list after adding
       setTimeout(() => setStatus('idle'), 3000);
-      
+
     } catch (error) {
       console.error('Error adding cake:', error);
       setErrorMessage(error.message || 'Failed to add cake. Please check your network or Cloudinary settings.');
@@ -161,22 +163,22 @@ const Admin = () => {
           <form onSubmit={handleLoginSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-semibold mb-2 text-brand-dark">Username</label>
-              <input 
-                type="text" 
-                name="username" 
-                value={loginCreds.username} 
-                onChange={handleLoginChange} 
+              <input
+                type="text"
+                name="username"
+                value={loginCreds.username}
+                onChange={handleLoginChange}
                 className="w-full px-4 py-3 rounded-lg border border-brand-dark/10 bg-brand-light focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold transition-all"
                 placeholder="Enter username"
               />
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2 text-brand-dark">Password</label>
-              <input 
-                type="password" 
-                name="password" 
-                value={loginCreds.password} 
-                onChange={handleLoginChange} 
+              <input
+                type="password"
+                name="password"
+                value={loginCreds.password}
+                onChange={handleLoginChange}
                 className="w-full px-4 py-3 rounded-lg border border-brand-dark/10 bg-brand-light focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold transition-all"
                 placeholder="Enter password"
               />
@@ -192,7 +194,7 @@ const Admin = () => {
             <button type="submit" className="w-full bg-brand-dark text-brand-gold py-4 rounded-lg font-bold tracking-widest uppercase text-sm hover:bg-brand-gold hover:text-brand-dark transition-all duration-300 shadow-luxury hover:shadow-luxury-hover">
               Sign In
             </button>
-            
+
             <div className="text-center mt-6">
               <Link to="/" className="text-sm text-brand-dark/40 hover:text-brand-gold transition-colors underline">
                 Return to Website
@@ -208,7 +210,7 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-brand-cream py-12 font-sans text-brand-dark">
       <div className="container mx-auto px-6 max-w-2xl">
-        
+
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-serif font-bold text-brand-gold mb-2">Admin Dashboard</h1>
@@ -216,7 +218,7 @@ const Admin = () => {
               Back to Website
             </Link>
           </div>
-          <button 
+          <button
             onClick={handleLogout}
             className="flex items-center gap-2 px-4 py-2 border border-brand-dark/20 rounded-lg text-brand-dark hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all text-sm font-semibold"
           >
@@ -231,7 +233,7 @@ const Admin = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            
+
             {/* Image Upload */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-brand-dark">Cake Image</label>
@@ -257,12 +259,12 @@ const Admin = () => {
             {/* Cake Name */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-brand-dark">Cake Name</label>
-              <input 
-                type="text" 
-                name="name" 
-                value={formData.name} 
-                onChange={handleChange} 
-                placeholder="Enter cake name" 
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Enter cake name"
                 className="w-full px-4 py-3 rounded-lg border border-brand-dark/10 bg-brand-light focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold transition-all placeholder:text-brand-dark/30"
               />
             </div>
@@ -270,12 +272,12 @@ const Admin = () => {
             {/* Price */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-brand-dark">Price</label>
-              <input 
-                type="number" 
-                name="price" 
-                value={formData.price} 
-                onChange={handleChange} 
-                placeholder="Enter price (₹)" 
+              <input
+                type="number"
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                placeholder="Enter price (₹)"
                 className="w-full px-4 py-3 rounded-lg border border-brand-dark/10 bg-brand-light focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold transition-all placeholder:text-brand-dark/30"
               />
             </div>
@@ -283,12 +285,12 @@ const Admin = () => {
             {/* Description */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-brand-dark">Description</label>
-              <textarea 
-                name="description" 
-                value={formData.description} 
-                onChange={handleChange} 
-                rows="4" 
-                placeholder="Enter cake description" 
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows="4"
+                placeholder="Enter cake description"
                 className="w-full px-4 py-3 rounded-lg border border-brand-dark/10 bg-brand-light focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold transition-all resize-none placeholder:text-brand-dark/30"
               />
             </div>
@@ -309,8 +311,8 @@ const Admin = () => {
             )}
 
             {/* Submit */}
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={status === 'loading'}
               className="w-full bg-brand-dark text-brand-gold py-4 rounded-lg font-bold tracking-[0.15em] uppercase text-sm hover:bg-brand-gold hover:text-brand-dark transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-luxury hover:shadow-luxury-hover mt-4"
             >
@@ -353,7 +355,7 @@ const Admin = () => {
                     <h4 className="font-serif text-lg text-brand-dark truncate">{cake.name}</h4>
                     <p className="text-brand-gold text-sm font-medium">{cake.price}</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => handleDeleteCake(cake.id)}
                     className="p-3 text-brand-dark/30 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                     title="Delete Cake"
