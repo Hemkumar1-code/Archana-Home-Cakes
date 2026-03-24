@@ -2,36 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { db } from '../firebase';
-import cakeRed from '../assets/cake_red.png';
-import cakeChoc from '../assets/cake_choc.png';
-import cakeVanilla from '../assets/cake_vanilla.png';
-
-const initialCakes = [
-  {
-    id: 1,
-    name: "Classic Red Velvet",
-    price: "₹1,500",
-    description: "Rich cocoa layers with signature cream cheese frosting and edible gold dust.",
-    image: cakeRed
-  },
-  {
-    id: 2,
-    name: "Dark Chocolate Truffle",
-    price: "₹1,800",
-    description: "Premium Belgian chocolate ganache with a soft sponge center and gold leaf.",
-    image: cakeChoc
-  },
-  {
-    id: 3,
-    name: "Floral Vanilla Bean",
-    price: "₹1,200",
-    description: "Madagascar vanilla layers decorated with delicate edible blooms.",
-    image: cakeVanilla
-  }
-];
-
 const CakesGrid = ({ onOrderClick }) => {
-  const [displayCakes, setDisplayCakes] = useState(initialCakes);
+  const [displayCakes, setDisplayCakes] = useState([]);
 
   useEffect(() => {
     const fetchCakes = async () => {
@@ -49,7 +21,7 @@ const CakesGrid = ({ onOrderClick }) => {
           image: c.image_url || c.image
         }));
         
-        setDisplayCakes([...mappedCakes, ...initialCakes]);
+        setDisplayCakes(mappedCakes);
       } catch (error) {
         console.error("Failed to fetch cakes from Firebase:", error);
       }
@@ -57,6 +29,8 @@ const CakesGrid = ({ onOrderClick }) => {
 
     fetchCakes();
   }, []);
+
+  if (displayCakes.length === 0) return null;
 
   return (
     <section id="showcase" className="py-32 bg-brand-cream relative">

@@ -88,6 +88,21 @@ const Admin = () => {
     }
   };
 
+  const handleClearAllCakes = async () => {
+    if (window.confirm("ARE YOU SURE? THIS WILL DELETE ALL CAKES FROM THE WEBSITE! This cannot be undone.")) {
+      try {
+        const querySnapshot = await getDocs(collection(db, "cakes"));
+        const deletePromises = querySnapshot.docs.map(docSnapshot => deleteDoc(doc(db, "cakes", docSnapshot.id)));
+        await Promise.all(deletePromises);
+        setCakes([]);
+        alert("All cakes deleted successfully. Starting fresh!");
+      } catch (error) {
+        console.error("Error clearing cakes:", error);
+        alert("Failed to clear some cakes.");
+      }
+    }
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -333,7 +348,15 @@ const Admin = () => {
         <div className="mt-12 bg-white rounded-2xl shadow-luxury p-8 md:p-12 border border-brand-gold/10">
           <div className="mb-8">
             <h2 className="text-2xl font-serif mb-2">Manage Showcase</h2>
-            <p className="text-brand-dark/50 text-sm">View or delete cakes currently displayed on your website.</p>
+            <p className="text-brand-dark/50 text-sm mb-4">View or delete cakes currently displayed on your website.</p>
+            {cakes.length > 0 && (
+              <button 
+                onClick={handleClearAllCakes}
+                className="px-4 py-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+              >
+                Clear Live Showcase
+              </button>
+            )}
           </div>
 
           {fetchingCakes ? (

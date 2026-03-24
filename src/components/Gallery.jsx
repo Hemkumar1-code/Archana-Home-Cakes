@@ -1,13 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import img1 from '../assets/cake_gallery_1.png';
-import img2 from '../assets/cake_gallery_2.png';
-import img3 from '../assets/cake_gallery_3.png';
-import img4 from '../assets/cake_vanilla.png';
-
-const images = [img1, img2, img3, img4];
+const images = [];
 
 const Gallery = () => {
+  if (images.length === 0) return null;
+
   return (
     <section id="gallery" className="py-24 bg-brand-dark text-brand-light">
       <div className="container mx-auto px-6">
