@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ImagePlus, Loader2, CheckCircle, AlertCircle, Lock, LogOut } from 'lucide-react';
+import { ImagePlus, Loader2, CheckCircle, AlertCircle, Lock, LogOut, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc, orderBy, query } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const Admin = () => {
@@ -48,8 +48,42 @@ const Admin = () => {
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  // Cakes List State
+  const [cakes, setCakes] = useState([]);
+  const [fetchingCakes, setFetchingCakes] = useState(false);
+
+  // Fetch cakes function
+  const fetchCakes = async () => {
+    setFetchingCakes(true);
+    try {
+      const q = query(collection(db, "cakes"), orderBy("created_at", "desc"));
+      const querySnapshot = await getDocs(q);
+      const cakesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setCakes(cakesData);
+    } catch (error) {
+      console.error("Error fetching cakes:", error);
+    } finally {
+      setFetchingCakes(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isLoggedIn) fetchCakes();
+  }, [isLoggedIn]);
+
+  const handleDeleteCake = async (cakeId) => {
+    if (window.confirm("Are you sure you want to delete this cake?")) {
+      try {
+        await deleteDoc(doc(db, "cakes", cakeId));
+        setCakes(cakes.filter(c => c.id !== cakeId));
+      } catch (error) {
+        console.error("Error deleting cake:", error);
+        alert("Failed to delete cake.");
+      }
+    }
   };
 
   const handleImageChange = (e) => {
@@ -101,6 +135,7 @@ const Admin = () => {
       setFormData({ name: '', price: '', description: '' });
       setImageFile(null);
       setImagePreview(null);
+      fetchCakes(); // Refresh list after adding
       setTimeout(() => setStatus('idle'), 3000);
       
     } catch (error) {
@@ -290,6 +325,45 @@ const Admin = () => {
             </button>
 
           </form>
+        </div>
+
+        {/* Manage Cakes Section */}
+        <div className="mt-12 bg-white rounded-2xl shadow-luxury p-8 md:p-12 border border-brand-gold/10">
+          <div className="mb-8">
+            <h2 className="text-2xl font-serif mb-2">Manage Showcase</h2>
+            <p className="text-brand-dark/50 text-sm">View or delete cakes currently displayed on your website.</p>
+          </div>
+
+          {fetchingCakes ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="animate-spin text-brand-gold" size={32} />
+            </div>
+          ) : cakes.length === 0 ? (
+            <div className="text-center py-12 text-brand-dark/40 border-2 border-dashed border-brand-dark/5 rounded-xl">
+              No cakes found in database. Add your first cake above!
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {cakes.map((cake) => (
+                <div key={cake.id} className="flex items-center gap-4 p-4 bg-brand-light rounded-xl border border-brand-dark/5 group hover:border-brand-gold/30 transition-all">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-white flex-shrink-0">
+                    <img src={cake.image_url} alt={cake.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <h4 className="font-serif text-lg text-brand-dark truncate">{cake.name}</h4>
+                    <p className="text-brand-gold text-sm font-medium">{cake.price}</p>
+                  </div>
+                  <button 
+                    onClick={() => handleDeleteCake(cake.id)}
+                    className="p-3 text-brand-dark/30 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    title="Delete Cake"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
