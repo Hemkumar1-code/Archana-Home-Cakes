@@ -1,7 +1,8 @@
-// src/components/CustomOrderModal.jsx
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Loader2, CheckCircle2 } from 'lucide-react';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { storage } from '../firebase';
 
 const CustomOrderModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -37,23 +38,12 @@ const CustomOrderModal = ({ isOpen, onClose }) => {
     // If there's an image, upload it first
     if (imagePreview) {
       try {
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: imagePreview })
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          imageUrl = data.url;
-        } else {
-          const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
-          console.error('Image upload failed:', errorData.error);
-          alert('Note: Image upload failed. Proceeding with WhatsApp order without the image link. You can still attach the image manually in WhatsApp.');
-        }
+        const imageRef = ref(storage, `custom-orders/${Date.now()}_reference`);
+        await uploadString(imageRef, imagePreview, 'data_url');
+        imageUrl = await getDownloadURL(imageRef);
       } catch (error) {
-        console.error('Error during image upload:', error);
-        alert('Note: Network error or server not configured for uploads. Proceeding with WhatsApp order without the image link.');
+        console.error('Error during image upload to Firebase:', error);
+        alert('Note: Setup incomplete or image upload failed. Proceeding with WhatsApp order without the image link. (Check if Firebase Storage Rules are set to true)');
       }
     }
 

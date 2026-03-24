@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { db } from '../firebase';
 import cakeRed from '../assets/cake_red.png';
 import cakeChoc from '../assets/cake_choc.png';
 import cakeVanilla from '../assets/cake_vanilla.png';
@@ -34,18 +36,22 @@ const CakesGrid = ({ onOrderClick }) => {
   useEffect(() => {
     const fetchCakes = async () => {
       try {
-        const response = await fetch('/api/cakes');
-        if (response.ok) {
-          const data = await response.json();
-          // Map image_url from database to image for component
-          const mappedCakes = data.map(c => ({
-            ...c,
-            image: c.image_url || c.image
-          }));
-          setDisplayCakes([...mappedCakes, ...initialCakes]);
-        }
+        const q = query(collection(db, "cakes"), orderBy("created_at", "desc"));
+        const querySnapshot = await getDocs(q);
+        
+        const data = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        const mappedCakes = data.map(c => ({
+          ...c,
+          image: c.image_url || c.image
+        }));
+        
+        setDisplayCakes([...mappedCakes, ...initialCakes]);
       } catch (error) {
-        console.error("Failed to fetch cakes from SQL:", error);
+        console.error("Failed to fetch cakes from Firebase:", error);
       }
     };
 
