@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { ImagePlus, Loader2, CheckCircle, AlertCircle, Lock, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 
 const Admin = () => {
   // Authentication State
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginCreds, setLoginCreds] = useState({ username: '', password: '' });
   const [loginError, setLoginError] = useState('');
 
@@ -15,7 +14,7 @@ const Admin = () => {
   useEffect(() => {
     const isAuth = localStorage.getItem('adminAuth');
     if (isAuth === 'true') {
-      setIsAuthenticated(true);
+      setIsLoggedIn(true);
     }
   }, []);
 
@@ -25,11 +24,11 @@ const Admin = () => {
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    const validUser = import.meta.env.VITE_ADMIN_USERNAME || 'archana';
-    const validPass = import.meta.env.VITE_ADMIN_PASSWORD || 'password123';
+    const validUser = 'archana';
+    const validPass = 'archana123';
 
     if (loginCreds.username === validUser && loginCreds.password === validPass) {
-      setIsAuthenticated(true);
+      setIsLoggedIn(true);
       localStorage.setItem('adminAuth', 'true');
       setLoginError('');
     } else {
@@ -38,9 +37,8 @@ const Admin = () => {
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
+    setIsLoggedIn(false);
     localStorage.removeItem('adminAuth');
-    setLoginCreds({ username: '', password: '' });
   };
 
   // Form State
@@ -60,7 +58,7 @@ const Admin = () => {
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result);
-      reader.readAsDataURL(file); // Convert image to Base64 String
+      reader.readAsDataURL(file);
     }
   };
 
@@ -75,10 +73,20 @@ const Admin = () => {
     try {
       setStatus('loading');
       
-      // 1. Upload Base64 Image to Firebase Storage
-      const imageRef = ref(storage, `cakes/${Date.now()}_cake`);
-      await uploadString(imageRef, imagePreview, 'data_url');
-      const downloadURL = await getDownloadURL(imageRef);
+      // 1. Upload to Cloudinary
+      const formDataCloud = new FormData();
+      formDataCloud.append('file', imagePreview);
+      formDataCloud.append('upload_preset', 'ml_default');
+      formDataCloud.append('cloud_name', 'drzwhaf79');
+
+      const cloudinaryRes = await fetch('https://api.cloudinary.com/v1_1/drzwhaf79/image/upload', {
+        method: 'POST',
+        body: formDataCloud,
+      });
+
+      if (!cloudinaryRes.ok) throw new Error('Cloudinary upload failed');
+      const cloudinaryData = await cloudinaryRes.json();
+      const downloadURL = cloudinaryData.secure_url;
 
       // 2. Add Cake Data to Firestore
       await addDoc(collection(db, "cakes"), {
@@ -96,14 +104,14 @@ const Admin = () => {
       setTimeout(() => setStatus('idle'), 3000);
       
     } catch (error) {
-      console.error('Error adding cake to Firebase:', error);
-      setErrorMessage(error.message || 'Failed to add cake. Please check your Firebase rules.');
+      console.error('Error adding cake:', error);
+      setErrorMessage(error.message || 'Failed to add cake. Please check your network or Cloudinary settings.');
       setStatus('error');
     }
   };
 
   // Login View
-  if (!isAuthenticated) {
+  if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-brand-dark flex items-center justify-center font-sans px-6">
         <div className="bg-white p-8 md:p-12 rounded-2xl shadow-luxury w-full max-w-md border border-brand-gold/10">

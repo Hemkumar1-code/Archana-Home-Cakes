@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Loader2, CheckCircle2 } from 'lucide-react';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
-import { storage } from '../firebase';
 
 const CustomOrderModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -35,15 +33,29 @@ const CustomOrderModal = ({ isOpen, onClose }) => {
 
     let imageUrl = '';
     
-    // If there's an image, upload it first
+    // If there's an image, upload it to Cloudinary
     if (imagePreview) {
       try {
-        const imageRef = ref(storage, `custom-orders/${Date.now()}_reference`);
-        await uploadString(imageRef, imagePreview, 'data_url');
-        imageUrl = await getDownloadURL(imageRef);
+        const formDataCloud = new FormData();
+        formDataCloud.append('file', imagePreview);
+        formDataCloud.append('upload_preset', 'ml_default');
+        formDataCloud.append('cloud_name', 'drzwhaf79');
+
+        const response = await fetch('https://api.cloudinary.com/v1_1/drzwhaf79/image/upload', {
+          method: 'POST',
+          body: formDataCloud,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          imageUrl = data.secure_url;
+        } else {
+          console.error('Cloudinary upload failed');
+          alert('Note: Image upload failed. Proceeding with WhatsApp order without the image link.');
+        }
       } catch (error) {
-        console.error('Error during image upload to Firebase:', error);
-        alert('Note: Setup incomplete or image upload failed. Proceeding with WhatsApp order without the image link. (Check if Firebase Storage Rules are set to true)');
+        console.error('Error during image upload to Cloudinary:', error);
+        alert('Note: Image upload failed. Proceeding with WhatsApp order without the image link.');
       }
     }
 
@@ -52,7 +64,7 @@ Flavor: ${formData.flavor}
 Weight: ${formData.weight}
 Message on Cake: ${formData.message}
 Name: ${formData.name}
-Phone: ${formData.phone}${imageUrl ? `\n\nReference Image Link: ${imageUrl}\n(Please wait a moment for the image preview to load in WhatsApp)` : '\n\n*I have reference images to share in chat.*'}`;
+Phone: ${formData.phone}${imageUrl ? `\n\nReference Image Link: ${imageUrl}\n(Wait a moment for the photo to appear in WhatsApp chat)` : '\n\n*I have reference images to share in chat.*'}`;
 
     const encodedText = encodeURIComponent(text);
     const whatsappUrl = `https://wa.me/919688476484?text=${encodedText}`;
