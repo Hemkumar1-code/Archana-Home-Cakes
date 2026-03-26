@@ -40,15 +40,14 @@ const Admin = () => {
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     
-    // Admin credentials from environment or defaults
-    const validUser = import.meta.env.VITE_ADMIN_USERNAME || 'archana';
-    const validPass = import.meta.env.VITE_ADMIN_PASSWORD || 'archana123';
+    // Explicitly using these credentials to rule out Vercel config issues
+    const validUser = 'archana';
+    const validPass = 'archana123';
 
-    // Normalize input (trim spaces and compare username case-insensitively)
-    const inputUser = loginCreds.username.trim();
+    const inputUser = loginCreds.username.trim().toLowerCase();
     const inputPass = loginCreds.password.trim();
 
-    if (inputUser.toLowerCase() === validUser.toLowerCase() && inputPass === validPass) {
+    if (inputUser === validUser && inputPass === validPass) {
       setIsLoggedIn(true);
       localStorage.setItem('adminAuth', 'true');
       setLoginError('');
