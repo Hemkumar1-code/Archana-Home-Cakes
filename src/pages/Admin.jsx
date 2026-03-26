@@ -10,6 +10,17 @@ const Admin = () => {
   const [loginCreds, setLoginCreds] = useState({ username: '', password: '' });
   const [loginError, setLoginError] = useState('');
 
+  // Form & UI State
+  const [formData, setFormData] = useState({ name: '', price: '', description: '' });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [status, setStatus] = useState('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Cakes List State
+  const [cakes, setCakes] = useState([]);
+  const [fetchingCakes, setFetchingCakes] = useState(false);
+
   // Check Local Storage on mount
   useEffect(() => {
     const isAuth = localStorage.getItem('adminAuth');
@@ -28,10 +39,16 @@ const Admin = () => {
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    const validUser = 'archana';
-    const validPass = 'archana123';
+    
+    // Admin credentials from environment or defaults
+    const validUser = import.meta.env.VITE_ADMIN_USERNAME || 'archana';
+    const validPass = import.meta.env.VITE_ADMIN_PASSWORD || 'archana123';
 
-    if (loginCreds.username === validUser && loginCreds.password === validPass) {
+    // Normalize input (trim spaces and compare username case-insensitively)
+    const inputUser = loginCreds.username.trim();
+    const inputPass = loginCreds.password.trim();
+
+    if (inputUser.toLowerCase() === validUser.toLowerCase() && inputPass === validPass) {
       setIsLoggedIn(true);
       localStorage.setItem('adminAuth', 'true');
       setLoginError('');
@@ -44,15 +61,6 @@ const Admin = () => {
     setIsLoggedIn(false);
     localStorage.removeItem('adminAuth');
   };
-  const [formData, setFormData] = useState({ name: '', price: '', description: '' });
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [status, setStatus] = useState('idle');
-  const [errorMessage, setErrorMessage] = useState('');
-
-  // Cakes List State
-  const [cakes, setCakes] = useState([]);
-  const [fetchingCakes, setFetchingCakes] = useState(false);
 
   // Fetch cakes function
   const fetchCakes = async () => {
